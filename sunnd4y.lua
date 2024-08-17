@@ -10,9 +10,10 @@ task.wait(.5)
 local UI = {}
 
 -- // StarterGui.ScreenGui \\ --
-UI["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"))
+UI["1"] = Instance.new("ScreenGui", game:GetService("CoreGui"))
 UI["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling
 UI["1"]["ResetOnSpawn"] = false
+
 
 
 
