@@ -12,7 +12,7 @@ local UI = {}
 -- // StarterGui.ScreenGui \\ --
 UI["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"))
 UI["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling
-UI["1"]["ResetOnSpawn"] = true
+UI["1"]["ResetOnSpawn"] = false
 
 
 
@@ -54,6 +54,7 @@ UI["4"]["Size"] = UDim2.new(0, 302, 0, 251)
 UI["4"]["Position"] = UDim2.new(0.0675, 0, 0.1404, 0)
 UI["4"]["BorderColor3"] = Color3.fromRGB(0, 0, 0)
 UI["4"]["Text"] = [[]]
+UI["4"]["TextWrapped"] = true
 UI["4"]["BackgroundTransparency"] = 1
 
 -- // StarterGui.ScreenGui.CanvasGroup.status \\ --
