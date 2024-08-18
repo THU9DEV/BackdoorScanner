@@ -14,6 +14,6 @@ sunnd4y BackdoorScanner is a tool designed to help identify and mitigate potenti
 2. Load the BackdoorScanner script using the following line of code:
 
    ```lua
-   _G.Game_Log = true
+   getgenv().Game_Log = true
    loadstring(game:HttpGet("https://raw.githubusercontent.com/THU9DEV/BackdoorScanner/main/sunnd4y.lua"))()
    ```
