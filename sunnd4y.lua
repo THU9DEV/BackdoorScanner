@@ -1,6 +1,6 @@
 -- // Bypass Adonis
 
-Game_Log = true
+_G.Game_Log = getgenv().Game_Log and true or false
 
 for k,v in pairs(game:GetDescendants()) do if pcall(function() return rawget(v,"indexInstance") end) and type(rawget(v,"indexInstance")) == "table" and (rawget(v,"indexInstance"))[1] == "kick" then v.tvk = {"kick",function() return false end} end end
 
